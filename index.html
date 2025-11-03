@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Task Check-in</title>
+    <title>Task Check-in Board</title>
     <style>
         * {
             margin: 0;
@@ -19,7 +19,7 @@
         }
 
         .container {
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
         }
 
@@ -29,8 +29,8 @@
             padding: 40px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             text-align: center;
-            max-width: 400px;
-            margin: 100px auto;
+            max-width: 450px;
+            margin: 80px auto;
         }
 
         .login-card h1 {
@@ -39,9 +39,10 @@
             font-size: 32px;
         }
 
-        .login-card p {
+        .login-card .subtitle {
             color: #666;
             margin-bottom: 30px;
+            font-size: 15px;
         }
 
         .login-card input {
@@ -77,9 +78,19 @@
         }
 
         .login-card .note {
-            margin-top: 20px;
+            margin-top: 25px;
+            padding: 15px;
+            background: #fff3cd;
+            border-radius: 10px;
             font-size: 13px;
-            color: #999;
+            color: #856404;
+            text-align: left;
+            line-height: 1.6;
+        }
+
+        .login-card .note strong {
+            display: block;
+            margin-bottom: 5px;
         }
 
         .header {
@@ -94,12 +105,20 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
         }
 
         .header h1 {
             color: #333;
             font-size: 28px;
+        }
+
+        .header-right {
+            display: flex;
+            gap: 15px;
+            align-items: center;
         }
 
         .user-info {
@@ -112,21 +131,44 @@
             font-weight: 600;
         }
 
+        .logout-btn {
+            padding: 8px 16px;
+            background: #f3f4f6;
+            color: #666;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: #e5e7eb;
+        }
+
         .task-input {
             display: flex;
             flex-direction: column;
             gap: 15px;
         }
 
-        .task-input input[type="text"] {
+        .task-input input[type="text"],
+        .task-input textarea {
             padding: 15px;
             border: 2px solid #e0e0e0;
             border-radius: 12px;
             font-size: 16px;
+            font-family: inherit;
             transition: border-color 0.3s;
+            resize: vertical;
         }
 
-        .task-input input[type="text"]:focus {
+        .task-input textarea {
+            min-height: 60px;
+        }
+
+        .task-input input:focus,
+        .task-input textarea:focus {
             outline: none;
             border-color: #667eea;
         }
@@ -160,9 +202,7 @@
             font-weight: 600;
             cursor: pointer;
             transition: background 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            white-space: nowrap;
         }
 
         .add-btn:hover:not(:disabled) {
@@ -237,6 +277,7 @@
             font-weight: 600;
             color: #333;
             margin-bottom: 10px;
+            line-height: 1.4;
         }
 
         .task-title.completed {
@@ -250,12 +291,23 @@
             font-size: 14px;
             color: #666;
             margin-bottom: 15px;
+            flex-wrap: wrap;
         }
 
         .task-meta span {
             display: flex;
             align-items: center;
             gap: 5px;
+        }
+
+        .author-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            background: #667eea;
+            color: white;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
         }
 
         .task-actions {
@@ -270,6 +322,7 @@
             cursor: pointer;
             padding: 5px;
             transition: color 0.3s;
+            font-size: 18px;
         }
 
         .icon-btn:hover {
@@ -303,7 +356,7 @@
             margin-bottom: 5px;
         }
 
-        .comment-meta span {
+        .comment-author {
             color: #667eea;
             font-weight: 600;
         }
@@ -311,6 +364,7 @@
         .comment-text {
             font-size: 14px;
             color: #555;
+            line-height: 1.5;
         }
 
         .comment-input {
@@ -363,14 +417,22 @@
             margin-bottom: 15px;
         }
 
-        .edit-inputs input {
+        .edit-inputs input,
+        .edit-inputs textarea {
             padding: 10px 15px;
             border: 2px solid #e0e0e0;
             border-radius: 10px;
             font-size: 14px;
+            font-family: inherit;
         }
 
-        .edit-inputs input:focus {
+        .edit-inputs textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .edit-inputs input:focus,
+        .edit-inputs textarea:focus {
             outline: none;
             border-color: #667eea;
         }
@@ -413,7 +475,17 @@
 
             .task-meta {
                 flex-direction: column;
-                gap: 5px;
+                gap: 8px;
+            }
+
+            .header-top {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .header-right {
+                width: 100%;
+                justify-content: space-between;
             }
         }
     </style>
@@ -421,36 +493,39 @@
 <body>
     <div class="container">
         <div id="loginScreen" class="login-card">
-            <h1>✨ Task Check-in</h1>
-            <p>Enter your name to start managing tasks</p>
-            <input type="text" id="usernameInput" placeholder="Your name" />
-            <button onclick="login()">Get Started</button>
-            <div class="note">Tasks are shared with all users and persist across sessions</div>
+            <h1>🎯 Task Check-in Board</h1>
+            <p class="subtitle">A shared space for mutual accountability</p>
+            <input type="text" id="usernameInput" placeholder="Enter your name (e.g., Ashley or Yuki)" />
+            <button onclick="login()">Join Board</button>
+            <div class="note">
+                <strong>📌 Note:</strong>
+                This board uses LocalStorage, which means tasks are saved in your browser. Both users must use the same browser/device to see shared tasks. For cross-device sharing, consider using Firebase in the future.
+            </div>
         </div>
 
         <div id="appScreen" class="hidden">
             <div class="header">
                 <div class="header-top">
-                    <h1>✨ Task Check-in</h1>
-                    <div class="user-info">
-                        Logged in as <span id="currentUser"></span>
+                    <h1>🎯 Task Check-in Board</h1>
+                    <div class="header-right">
+                        <div class="user-info">
+                            <span id="currentUser"></span>
+                        </div>
+                        <button class="logout-btn" onclick="logout()">Switch User</button>
                     </div>
                 </div>
                 <div class="task-input">
-                    <input type="text" id="taskDescription" placeholder="What needs to be done?" />
+                    <textarea id="taskDescription" placeholder="What needs to be done?" rows="2"></textarea>
                     <div class="input-row">
                         <input type="datetime-local" id="taskSchedule" />
-                        <button class="add-btn" onclick="addTask()">
-                            <span>➕</span>
-                            <span>Add Task</span>
-                        </button>
+                        <button class="add-btn" onclick="addTask()">➕ Add Task</button>
                     </div>
                 </div>
             </div>
 
             <div class="tasks-list" id="tasksList">
                 <div class="empty-state">
-                    No tasks yet. Create your first task above! 🎯
+                    No tasks yet. Create your first task above! 🚀
                 </div>
             </div>
         </div>
@@ -461,6 +536,17 @@
         let tasks = [];
         let editingTaskId = null;
 
+        function loadFromLocalStorage() {
+            const savedTasks = localStorage.getItem('taskCheckinBoard');
+            if (savedTasks) {
+                tasks = JSON.parse(savedTasks);
+            }
+        }
+
+        function saveToLocalStorage() {
+            localStorage.setItem('taskCheckinBoard', JSON.stringify(tasks));
+        }
+
         function login() {
             const username = document.getElementById('usernameInput').value.trim();
             if (username) {
@@ -468,37 +554,26 @@
                 document.getElementById('currentUser').textContent = username;
                 document.getElementById('loginScreen').classList.add('hidden');
                 document.getElementById('appScreen').classList.remove('hidden');
-                loadTasks();
-                setInterval(loadTasks, 3000);
+                loadFromLocalStorage();
+                renderTasks();
             }
         }
 
-        async function loadTasks() {
-            try {
-                const result = await window.storage.list('task:', true);
-                if (result && result.keys) {
-                    const taskPromises = result.keys.map(async (key) => {
-                        try {
-                            const data = await window.storage.get(key, true);
-                            return data ? JSON.parse(data.value) : null;
-                        } catch {
-                            return null;
-                        }
-                    });
-                    tasks = (await Promise.all(taskPromises)).filter(t => t !== null);
-                    tasks.sort((a, b) => new Date(a.scheduledTime) - new Date(b.scheduledTime));
-                    renderTasks();
-                }
-            } catch (error) {
-                console.error('Error loading tasks:', error);
-            }
+        function logout() {
+            currentUsername = '';
+            document.getElementById('usernameInput').value = '';
+            document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('appScreen').classList.add('hidden');
         }
 
-        async function addTask() {
+        function addTask() {
             const description = document.getElementById('taskDescription').value.trim();
             const scheduledTime = document.getElementById('taskSchedule').value;
 
-            if (!description || !scheduledTime) return;
+            if (!description || !scheduledTime) {
+                alert('Please fill in both task description and time');
+                return;
+            }
 
             const task = {
                 id: `task_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -510,35 +585,29 @@
                 comments: []
             };
 
-            try {
-                await window.storage.set(task.id, JSON.stringify(task), true);
-                document.getElementById('taskDescription').value = '';
-                document.getElementById('taskSchedule').value = '';
-                await loadTasks();
-            } catch (error) {
-                console.error('Error adding task:', error);
-            }
+            tasks.push(task);
+            tasks.sort((a, b) => new Date(a.scheduledTime) - new Date(b.scheduledTime));
+            saveToLocalStorage();
+
+            document.getElementById('taskDescription').value = '';
+            document.getElementById('taskSchedule').value = '';
+            renderTasks();
         }
 
-        async function toggleComplete(taskId) {
+        function toggleComplete(taskId) {
             const task = tasks.find(t => t.id === taskId);
-            if (!task) return;
-
-            task.completed = !task.completed;
-            try {
-                await window.storage.set(taskId, JSON.stringify(task), true);
-                await loadTasks();
-            } catch (error) {
-                console.error('Error updating task:', error);
+            if (task) {
+                task.completed = !task.completed;
+                saveToLocalStorage();
+                renderTasks();
             }
         }
 
-        async function deleteTask(taskId) {
-            try {
-                await window.storage.delete(taskId, true);
-                await loadTasks();
-            } catch (error) {
-                console.error('Error deleting task:', error);
+        function deleteTask(taskId) {
+            if (confirm('Are you sure you want to delete this task?')) {
+                tasks = tasks.filter(t => t.id !== taskId);
+                saveToLocalStorage();
+                renderTasks();
             }
         }
 
@@ -547,22 +616,18 @@
             renderTasks();
         }
 
-        async function saveEdit(taskId) {
+        function saveEdit(taskId) {
             const description = document.getElementById(`edit-desc-${taskId}`).value.trim();
             const scheduledTime = document.getElementById(`edit-time-${taskId}`).value;
 
             const task = tasks.find(t => t.id === taskId);
-            if (!task || !description || !scheduledTime) return;
-
-            task.description = description;
-            task.scheduledTime = scheduledTime;
-
-            try {
-                await window.storage.set(taskId, JSON.stringify(task), true);
+            if (task && description && scheduledTime) {
+                task.description = description;
+                task.scheduledTime = scheduledTime;
+                tasks.sort((a, b) => new Date(a.scheduledTime) - new Date(b.scheduledTime));
+                saveToLocalStorage();
                 editingTaskId = null;
-                await loadTasks();
-            } catch (error) {
-                console.error('Error updating task:', error);
+                renderTasks();
             }
         }
 
@@ -571,47 +636,58 @@
             renderTasks();
         }
 
-        async function addComment(taskId) {
+        function addComment(taskId) {
             const input = document.getElementById(`comment-${taskId}`);
             const commentText = input.value.trim();
             if (!commentText) return;
 
             const task = tasks.find(t => t.id === taskId);
-            if (!task) return;
+            if (task) {
+                const comment = {
+                    id: `comment_${Date.now()}`,
+                    text: commentText,
+                    author: currentUsername,
+                    timestamp: new Date().toISOString()
+                };
 
-            const comment = {
-                id: `comment_${Date.now()}`,
-                text: commentText,
-                author: currentUsername,
-                timestamp: new Date().toISOString()
-            };
-
-            task.comments.push(comment);
-
-            try {
-                await window.storage.set(taskId, JSON.stringify(task), true);
+                task.comments.push(comment);
+                saveToLocalStorage();
                 input.value = '';
-                await loadTasks();
-            } catch (error) {
-                console.error('Error adding comment:', error);
+                renderTasks();
             }
         }
 
         function formatDateTime(dateString) {
             const date = new Date(dateString);
-            return date.toLocaleString('en-US', {
+            const now = new Date();
+            const diffMs = date - now;
+            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+            const timeStr = date.toLocaleString('en-US', {
                 month: 'short',
                 day: 'numeric',
                 hour: '2-digit',
                 minute: '2-digit'
             });
+
+            if (diffDays === 0) return `Today, ${timeStr}`;
+            if (diffDays === 1) return `Tomorrow, ${timeStr}`;
+            if (diffDays === -1) return `Yesterday, ${timeStr}`;
+            
+            return timeStr;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
 
         function renderTasks() {
             const tasksList = document.getElementById('tasksList');
 
             if (tasks.length === 0) {
-                tasksList.innerHTML = '<div class="empty-state">No tasks yet. Create your first task above! 🎯</div>';
+                tasksList.innerHTML = '<div class="empty-state">No tasks yet. Create your first task above! 🚀</div>';
                 return;
             }
 
@@ -625,7 +701,7 @@
                             <div class="task-content">
                                 ${isEditing ? `
                                     <div class="edit-inputs">
-                                        <input type="text" id="edit-desc-${task.id}" value="${task.description}" />
+                                        <textarea id="edit-desc-${task.id}" rows="2">${escapeHtml(task.description)}</textarea>
                                         <input type="datetime-local" id="edit-time-${task.id}" value="${task.scheduledTime}" />
                                     </div>
                                     <div class="edit-actions">
@@ -633,10 +709,10 @@
                                         <button class="cancel-btn" onclick="cancelEdit()">Cancel</button>
                                     </div>
                                 ` : `
-                                    <div class="task-title ${task.completed ? 'completed' : ''}">${task.description}</div>
+                                    <div class="task-title ${task.completed ? 'completed' : ''}">${escapeHtml(task.description)}</div>
                                     <div class="task-meta">
                                         <span>🕐 ${formatDateTime(task.scheduledTime)}</span>
-                                        <span>👤 by ${task.createdBy}</span>
+                                        <span class="author-badge">${escapeHtml(task.createdBy)}</span>
                                     </div>
                                 `}
                                 
@@ -645,16 +721,16 @@
                                         ${task.comments.map(comment => `
                                             <div class="comment">
                                                 <div class="comment-meta">
-                                                    <span>${comment.author}</span> - ${formatDateTime(comment.timestamp)}
+                                                    <span class="comment-author">${escapeHtml(comment.author)}</span> ${formatDateTime(comment.timestamp)}
                                                 </div>
-                                                <div class="comment-text">${comment.text}</div>
+                                                <div class="comment-text">${escapeHtml(comment.text)}</div>
                                             </div>
                                         `).join('')}
                                     </div>
                                 ` : ''}
                                 
                                 <div class="comment-input">
-                                    <input type="text" id="comment-${task.id}" placeholder="Add a comment..." onkeypress="if(event.key==='Enter') addComment('${task.id}')" />
+                                    <input type="text" id="comment-${task.id}" placeholder="Leave a comment or note..." onkeypress="if(event.key==='Enter') addComment('${task.id}')" />
                                     <button class="comment-btn" onclick="addComment('${task.id}')">💬</button>
                                 </div>
                             </div>
@@ -673,8 +749,12 @@
         });
 
         document.getElementById('taskDescription').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && e.target.value.trim() && document.getElementById('taskSchedule').value) {
-                addTask();
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                const scheduleInput = document.getElementById('taskSchedule');
+                if (e.target.value.trim() && scheduleInput.value) {
+                    addTask();
+                }
             }
         });
     </script>
